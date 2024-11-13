@@ -12,9 +12,9 @@ const app = express();
 // Environment and Port configuration
 const PORT = process.env.PORT || 3000;
 
-// Ensure MONGODB_URI is set
-if (!process.env.MONGODB_URI) {
-  console.error('FATAL ERROR: MONGODB_URI is not defined.');
+// Ensure MONGODB_URI and API_KEY are set
+if (!process.env.MONGODB_URI || !process.env.API_KEY) {
+  console.error('FATAL ERROR: MONGODB_URI or API_KEY is not defined.');
   process.exit(1);
 }
 
@@ -36,7 +36,7 @@ app.use(helmet());
 
 // Security: CORS with specified origin
 const corsOptions = {
-  origin: ['https://nimble-sunshine-294092.netlify.app', 'https://nimble-sunshine-294092.netlify.app/all-primes-data', 'http://localhost:3000'], // Replace with your frontend origins
+  origin: ['https://nimble-sunshine-294092.netlify.app', 'http://localhost:3000'], // Replace with your frontend origins
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
@@ -48,8 +48,15 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// API to fetch data from MongoDB and serve frontend
+// API to fetch data from MongoDB and serve frontend, with API key verification
 app.get('/api/prime-data', async (req, res) => {
+  const apiKey = req.headers['x-api-key'];
+
+  // Check if the API key matches the environment variable
+  if (apiKey !== process.env.API_KEY) {
+    return res.status(403).json({ error: 'Forbidden: Invalid API key' });
+  }
+
   try {
     const data = await PrimeData.find();
 
