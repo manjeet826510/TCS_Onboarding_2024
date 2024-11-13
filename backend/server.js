@@ -52,10 +52,12 @@ app.use(limiter);
 app.get('/api/prime-data', async (req, res) => {
   const referer = req.get('Referer');
   const allowedOrigin = 'https://nimble-sunshine-294092.netlify.app';
-  
 
-  // Check both Referer and API Key
-  if (referer !== allowedOrigin || req.headers['x-api-key'] !== process.env.API_KEY) {
+  // Check if the request is coming from your allowed origin
+  if (referer && referer.startsWith(allowedOrigin)) {
+    // Allow requests from your frontend without API key
+  } else if (req.headers['x-api-key'] !== process.env.API_KEY) {
+    // Block requests without API key that don't come from allowed origin
     return res.status(403).json({ error: 'Unauthorized access' });
   }
 
