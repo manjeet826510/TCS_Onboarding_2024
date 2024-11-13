@@ -36,7 +36,7 @@ app.use(helmet());
 
 // Security: CORS with specified origin
 const corsOptions = {
-  origin: 'https://nimble-sunshine-294092.netlify.app/', // Replace with your actual frontend domain
+  origin: ['https://nimble-sunshine-294092.netlify.app', 'https://nimble-sunshine-294092.netlify.app/all-primes-data', 'http://localhost:3000'], // Replace with your frontend origins
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
