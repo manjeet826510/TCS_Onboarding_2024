@@ -50,11 +50,13 @@ app.use(limiter);
 
 // API to fetch data from MongoDB and serve frontend, with API key verification
 app.get('/api/prime-data', async (req, res) => {
-  const apiKey = req.headers['x-api-key'];
+  const referer = req.get('Referer');
+  const allowedOrigin = 'https://nimble-sunshine-294092.netlify.app';
+  
 
-  // Check if the API key matches the environment variable
-  if (apiKey !== process.env.API_KEY) {
-    return res.status(403).json({ error: 'Forbidden: Invalid API key' });
+  // Check both Referer and API Key
+  if (referer !== allowedOrigin || req.headers['x-api-key'] !== process.env.API_KEY) {
+    return res.status(403).json({ error: 'Unauthorized access' });
   }
 
   try {
