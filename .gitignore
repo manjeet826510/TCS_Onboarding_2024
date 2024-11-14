@@ -10,4 +10,5 @@ node_modules/
 Thumbs.db
 
 backend/seed.js
+frontend/src/prime_data.js
 
