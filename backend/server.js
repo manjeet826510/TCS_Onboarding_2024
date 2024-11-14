@@ -46,10 +46,11 @@ app.use(helmet({
 
 // Security: CORS with specified origin for production only
 const corsOptions = {
-  origin: ['https://nimble-sunshine-294092.netlify.app'],
+  origin: process.env.ALLOWED_ORIGIN,
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
 
 // Security: Rate limiting to limit requests from the same IP
 const limiter = rateLimit({
@@ -160,8 +161,12 @@ app.get('/api/prime-data', [
     return res.status(400).json({ errors: errors.array() });
   }
 
+
+
+
+
   const referer = req.get('Referer');
-  const allowedOrigin = 'https://nimble-sunshine-294092.netlify.app';
+  const allowedOrigin = process.env.ALLOWED_ORIGIN;
   const name = req.query.month;
   const mtop_sec_key = req.query.mtop_sec_key;
 
