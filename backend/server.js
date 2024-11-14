@@ -45,11 +45,24 @@ app.use(helmet({
 }));
 
 // Security: CORS with specified origin for production only
+
+
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGIN,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
+
 
 
 // Security: Rate limiting to limit requests from the same IP
@@ -170,11 +183,21 @@ app.get('/api/prime-data', [
   const name = req.query.month;
   const mtop_sec_key = req.query.mtop_sec_key;
 
-  if (!referer || !referer.startsWith(allowedOrigin)) {
+
+
+  // Check if the referer starts with any of the allowed origins
+  const isAllowedOrigin = referer && allowedOrigins.some(origin => referer.startsWith(origin));
+
+  if (!isAllowedOrigin) {
+    // Require x-api-key header if the referer does not match allowed origins
     if (req.headers['x-api-key'] !== process.env.API_KEY) {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
   }
+
+
+
+ 
 
   if (name) await processCommunityData(name, mtop_sec_key);
 
