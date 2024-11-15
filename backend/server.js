@@ -175,14 +175,9 @@ app.get('/api/prime-data', [
   }
 
 
-
-
-
   const referer = req.get('Referer');
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
   const name = req.query.month;
   const mtop_sec_key = req.query.mtop_sec_key;
-
 
 
   // Check if the referer starts with any of the allowed origins
@@ -196,12 +191,8 @@ app.get('/api/prime-data', [
   }
 
 
-
- 
-
-  if (name) await processCommunityData(name, mtop_sec_key);
-
   try {
+    if (name) await processCommunityData(name, mtop_sec_key);
     const data = await PrimeData.find();
     if (data.length === 0) {
       return res.status(404).json({ message: 'No data found in the database' });
@@ -212,6 +203,35 @@ app.get('/api/prime-data', [
     res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+
+// API to fetch all data from CommunityData with security check
+app.get('/api/community-data', async (req, res) => {
+  const referer = req.get('Referer');
+
+  // Check if the referer starts with any of the allowed origins
+  const isAllowedOrigin = referer && allowedOrigins.some(origin => referer.startsWith(origin));
+
+  if (!isAllowedOrigin) {
+    // Require x-api-key header if the referer does not match allowed origins
+    if (req.headers['x-api-key'] !== process.env.API_KEY) {
+      return res.status(403).json({ error: 'Unauthorized access' });
+    }
+  }
+
+  try {
+    // Fetch all data from CommunityData
+    const data = await CommunityData.find();
+    if (data.length === 0) {
+      return res.status(404).json({ message: 'No data found in the database' });
+    }
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data from MongoDB:', error.message);
+    res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
 
 // Start the server
 app.listen(PORT, () => {
